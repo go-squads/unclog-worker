@@ -14,39 +14,39 @@ const (
 	JsonParseError = errkit.Error("JSON Parse Error")
 )
 
-func ConvertBytesToTimber(data []byte) (timber Timber, err error) {
-	err = json.Unmarshal(data, &timber)
+func ConvertBytesToTimberWolf(data []byte) (timberWolf TimberWolf, err error) {
+	err = json.Unmarshal(data, &timberWolf)
 	if err != nil {
 		err = errkit.Concat(JsonParseError, err)
 		return
 	}
 
-	err = timber.InitContext()
+	err = timberWolf.InitContext()
 	if err != nil {
 		return
 	}
 
-	if timber.Timestamp() == "" {
-		timber.SetTimestamp(time.Now().UTC().Format(time.RFC3339))
+	if timberWolf.Timestamp() == "" {
+		timberWolf.SetTimestamp(time.Now().UTC().Format(time.RFC3339))
 	}
 
 	return
 }
 
-// NewTimberFromRequest create timber instance from http request
-func ConvertRequestToTimber(req *http.Request) (Timber, error) {
+// NewTimberWolfFromRequest create timberWolf instance from http request
+func ConvertRequestToTimberWolf(req *http.Request) (TimberWolf, error) {
 	body, _ := ioutil.ReadAll(req.Body)
-	return ConvertBytesToTimber(body)
+	return ConvertBytesToTimberWolf(body)
 }
 
-// NewTimberFromKafkaMessage create timber instance from kafka message
-func ConvertKafkaMessageToTimber(message *sarama.ConsumerMessage) (timber Timber, err error) {
-	return ConvertBytesToTimber(message.Value)
+// NewTimberWolfFromKafkaMessage create timberWolf instance from kafka message
+func ConvertKafkaMessageToTimberWolf(message *sarama.ConsumerMessage) (timberWolf TimberWolf, err error) {
+	return ConvertBytesToTimberWolf(message.Value)
 }
 
-// ConvertToKafkaMessage will convert timber to sarama producer message for kafka
-func ConvertTimberToKafkaMessage(timber Timber, topic string) *sarama.ProducerMessage {
-	b, _ := json.Marshal(timber)
+// ConvertToKafkaMessage will convert timberWolf to sarama producer message for kafka
+func ConvertTimberWolfToKafkaMessage(timberWolf TimberWolf, topic string) *sarama.ProducerMessage {
+	b, _ := json.Marshal(timberWolf)
 
 	return &sarama.ProducerMessage{
 		Topic: topic,
@@ -54,9 +54,9 @@ func ConvertTimberToKafkaMessage(timber Timber, topic string) *sarama.ProducerMe
 	}
 }
 
-func ConvertTimberToElasticDocument(timber Timber) map[string]interface{} {
+func ConvertTimberWolfToElasticDocument(timberWolf TimberWolf) map[string]interface{} {
 	doc := make(map[string]interface{})
-	for k, v := range timber {
+	for k, v := range timberWolf {
 		doc[k] = v
 	}
 

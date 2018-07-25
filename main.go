@@ -30,7 +30,7 @@ func main() {
 				Name:      "consumer",
 				ShortName: "c",
 				Usage:     "start unclog as consumer",
-				Action:    cmds.ActionBaritoConsumerService,
+				Action:    cmds.ActionStreamProcessorService,
 			},
 		},
 	}

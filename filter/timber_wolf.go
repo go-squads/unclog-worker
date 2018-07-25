@@ -11,42 +11,39 @@ const (
 	MissingContextError = errkit.Error("Missing Context Error")
 )
 
-// Timber
-type Timber map[string]interface{}
+type TimberWolf map[string]interface{}
 
-type TimberContext struct {
+type TimberWolfContext struct {
 	KafkaTopic             string `json:"kafka_topic"`
 	KafkaPartition         int32  `json:"kafka_partition"`
 	KafkaReplicationFactor int16  `json:"kafka_replication_factor"`
-	ESIndexPrefix          string `json:"es_index_prefix"`
-	ESDocumentType         string `json:"es_document_type"`
 	AppMaxTPS              int    `json:"app_max_tps"`
 }
 
-func NewTimber() Timber {
-	timber := make(map[string]interface{})
-	return timber
+func NewTimberWolf() TimberWolf {
+	timberWolf := make(map[string]interface{})
+	return timberWolf
 }
 
-func (t Timber) SetTimestamp(timestamp string) {
+func (t TimberWolf) SetTimestamp(timestamp string) {
 	t["@timestamp"] = timestamp
 }
 
-func (t Timber) Timestamp() (s string) {
+func (t TimberWolf) Timestamp() (s string) {
 	s, _ = t["@timestamp"].(string)
 	return
 }
 
-func (t Timber) Context() (ctx *TimberContext) {
-	ctx, _ = t["_ctx"].(*TimberContext)
+func (t TimberWolf) Context() (ctx *TimberWolfContext) {
+	ctx, _ = t["_ctx"].(*TimberWolfContext)
 	return
 }
 
-func (t Timber) SetContext(ctx *TimberContext) {
+func (t TimberWolf) SetContext(ctx *TimberWolfContext) {
 	t["_ctx"] = ctx
 }
 
-func (t Timber) InitContext() (err error) {
+func (t TimberWolf) InitContext() (err error) {
 	ctxMap, ok := t["_ctx"].(map[string]interface{})
 	if !ok {
 		err = MissingContextError
@@ -63,22 +60,10 @@ func (t Timber) InitContext() (err error) {
 	return
 }
 
-func mapToContext(m map[string]interface{}) (ctx *TimberContext, err error) {
+func mapToContext(m map[string]interface{}) (ctx *TimberWolfContext, err error) {
 	kafkaTopic, ok := m["kafka_topic"].(string)
 	if !ok {
 		err = fmt.Errorf("kafka_topic is missing")
-		return
-	}
-
-	esIndexPrefix, ok := m["es_index_prefix"].(string)
-	if !ok {
-		err = fmt.Errorf("es_index_prefix is missing")
-		return
-	}
-
-	esDocumentType, ok := m["es_document_type"].(string)
-	if !ok {
-		err = fmt.Errorf("es_document_type is missing")
 		return
 	}
 
@@ -100,12 +85,10 @@ func mapToContext(m map[string]interface{}) (ctx *TimberContext, err error) {
 		return
 	}
 
-	ctx = &TimberContext{
+	ctx = &TimberWolfContext{
 		KafkaTopic:             kafkaTopic,
 		KafkaPartition:         int32(kafkaPartition),
 		KafkaReplicationFactor: int16(kafkaReplicationFactor),
-		ESIndexPrefix:          esIndexPrefix,
-		ESDocumentType:         esDocumentType,
 		AppMaxTPS:              int(appMaxTPS),
 	}
 

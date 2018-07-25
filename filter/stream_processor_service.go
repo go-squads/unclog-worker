@@ -1,7 +1,6 @@
 package filter
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/BaritoLog/go-boilerplate/errkit"
@@ -21,48 +20,58 @@ const (
 	ErrMakeSyncProducer      = errkit.Error("Make sync producer failed")
 )
 
-type BaritoConsumerService interface {
+type StreamProcessorServiceInterface interface {
 	Start() error
 	Close()
 	WorkerMap() map[string]ConsumerWorker
 	NewTopicEventWorker() ConsumerWorker
+	SendLogs(topic string, timberWolf TimberWolf) error
 }
 
-type baritoConsumerService struct {
+type SaramaMessageHandler = func(*StreamProcessorService, *sarama.ConsumerMessage)
+
+type StreamProcessorService struct {
 	factory           KafkaFactory
 	groupID           string
-	elasticUrl        string
 	topicSuffix       string
 	newTopicEventName string
 
-	producer            sarama.SyncProducer
 	workerMap           map[string]ConsumerWorker
 	admin               KafkaAdmin
 	newTopicEventWorker ConsumerWorker
 
-	lastError    error
-	lastTimber   Timber
-	lastNewTopic string
+	lastError      error
+	lastTimberWolf TimberWolf
+	lastNewTopic   string
+	handler        SaramaMessageHandler
 }
 
-func NewBaritoConsumerService(factory KafkaFactory, groupID, elasticURL, topicSuffix, newTopicEventName string) BaritoConsumerService {
+func NewStreamProcessorService(factory KafkaFactory, groupID, topicSuffix, newTopicEventName string, handler SaramaMessageHandler) StreamProcessorServiceInterface {
 
-	return &baritoConsumerService{
+	return &StreamProcessorService{
 		factory:           factory,
 		groupID:           groupID,
-		elasticUrl:        elasticURL,
 		topicSuffix:       topicSuffix,
 		newTopicEventName: newTopicEventName,
 		workerMap:         make(map[string]ConsumerWorker),
+		handler:           handler,
 	}
 }
 
-func (s *baritoConsumerService) Start() (err error) {
-	s.producer, err = s.factory.MakeSyncProducer()
+func (s *StreamProcessorService) SendLogs(topic string, timberWolf TimberWolf) (err error) {
+	producer, err := s.factory.MakeSyncProducer()
 	if err != nil {
 		err = errkit.Concat(ErrMakeSyncProducer, err)
 		return
 	}
+
+	message := ConvertTimberWolfToKafkaMessage(timberWolf, topic)
+	_, _, err = producer.SendMessage(message)
+	return
+}
+
+func (s *StreamProcessorService) Start() (err error) {
+
 	admin, err := s.initAdmin()
 	if err != nil {
 		return errkit.Concat(ErrMakeKafkaAdmin, err)
@@ -87,13 +96,13 @@ func (s *baritoConsumerService) Start() (err error) {
 	return
 }
 
-func (s *baritoConsumerService) initAdmin() (admin KafkaAdmin, err error) {
+func (s *StreamProcessorService) initAdmin() (admin KafkaAdmin, err error) {
 	admin, err = s.factory.MakeKafkaAdmin()
 	s.admin = admin
 	return
 }
 
-func (s *baritoConsumerService) initNewTopicWorker() (worker ConsumerWorker, err error) { // TODO: return worker
+func (s *StreamProcessorService) initNewTopicWorker() (worker ConsumerWorker, err error) { // TODO: return worker
 	topic := s.newTopicEventName
 	consumer, err := s.factory.MakeClusterConsumer(s.groupID, topic, sarama.OffsetNewest)
 	if err != nil {
@@ -108,8 +117,7 @@ func (s *baritoConsumerService) initNewTopicWorker() (worker ConsumerWorker, err
 	return
 }
 
-// Close
-func (s baritoConsumerService) Close() {
+func (s StreamProcessorService) Close() {
 	for _, worker := range s.workerMap {
 		worker.Stop()
 	}
@@ -123,7 +131,13 @@ func (s baritoConsumerService) Close() {
 	}
 }
 
-func (s *baritoConsumerService) spawnLogsWorker(topic string, initialOffset int64) (err error) {
+func (s *StreamProcessorService) getConsumerHandler() func(*sarama.ConsumerMessage) {
+	return func(m *sarama.ConsumerMessage) {
+		s.handler(s, m)
+	}
+}
+
+func (s *StreamProcessorService) spawnLogsWorker(topic string, initialOffset int64) (err error) {
 
 	consumer, err := s.factory.MakeClusterConsumer(s.groupID, topic, initialOffset)
 	if err != nil {
@@ -133,7 +147,7 @@ func (s *baritoConsumerService) spawnLogsWorker(topic string, initialOffset int6
 
 	worker := NewConsumerWorker(topic, consumer)
 	worker.OnError(s.logError)
-	worker.OnSuccess(s.onStoreTimber)
+	worker.OnSuccess(s.getConsumerHandler())
 	worker.Start()
 
 	s.workerMap[topic] = worker
@@ -141,66 +155,22 @@ func (s *baritoConsumerService) spawnLogsWorker(topic string, initialOffset int6
 	return
 }
 
-func (s *baritoConsumerService) logError(err error) {
+func (s *StreamProcessorService) logError(err error) {
 	s.lastError = err
 	log.Warn(err.Error())
 }
 
-func (s *baritoConsumerService) logTimber(timber Timber) {
-	s.lastTimber = timber
-	log.Infof("Timber: %v", timber)
+func (s *StreamProcessorService) LogTimberWolf(timberWolf TimberWolf) {
+	s.lastTimberWolf = timberWolf
+	log.Infof("TimberWolf: %v", timberWolf)
 }
 
-func (s *baritoConsumerService) logNewTopic(topic string) {
+func (s *StreamProcessorService) logNewTopic(topic string) {
 	s.lastNewTopic = topic
 	log.Infof("New topic: %s", topic)
 }
 
-func (s *baritoConsumerService) onStoreTimber(message *sarama.ConsumerMessage) {
-	log.Info(message)
-	// create elastic client
-	// client, err := elasticNewClient(s.elasticUrl)
-	// if err != nil {
-	// s.logError(errkit.Concat(ErrElasticsearchClient, err))
-	// return
-	// }
-
-	// convert kafka message
-	timber, err := ConvertKafkaMessageToTimber(message)
-	if err != nil {
-		s.logError(errkit.Concat(ErrConvertKafkaMessage, err))
-		return
-	}
-	log.Info(timber["loglevel"])
-	// store to elasticsearch
-	// ctx := context.Background()
-	// err = elasticStore(client, ctx, timber)
-	// if err != nil {
-	// 	s.logError(errkit.Concat(ErrStore, err))
-	// 	return
-	// }
-	// store to kafka here
-	topic := "processed_topic"
-	err = s.sendLogs(topic, timber)
-	if err != nil {
-		log.Info(err)
-		return
-	}
-	fmt.Print("\n\n")
-	fmt.Print(timber)
-	fmt.Print(topic)
-	fmt.Print("\n\n")
-	s.logTimber(timber)
-}
-
-func (s *baritoConsumerService) sendLogs(topic string, timber Timber) (err error) {
-	message := ConvertTimberToKafkaMessage(timber, topic)
-
-	_, _, err = s.producer.SendMessage(message)
-	return
-}
-
-func (s *baritoConsumerService) onNewTopicEvent(message *sarama.ConsumerMessage) {
+func (s *StreamProcessorService) onNewTopicEvent(message *sarama.ConsumerMessage) {
 	topic := string(message.Value)
 
 	err := s.spawnLogsWorker(topic, sarama.OffsetOldest)
@@ -213,10 +183,10 @@ func (s *baritoConsumerService) onNewTopicEvent(message *sarama.ConsumerMessage)
 	s.logNewTopic(topic)
 }
 
-func (s *baritoConsumerService) WorkerMap() map[string]ConsumerWorker {
+func (s *StreamProcessorService) WorkerMap() map[string]ConsumerWorker {
 	return s.workerMap
 }
 
-func (s *baritoConsumerService) NewTopicEventWorker() ConsumerWorker {
+func (s *StreamProcessorService) NewTopicEventWorker() ConsumerWorker {
 	return s.newTopicEventWorker
 }
