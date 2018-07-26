@@ -50,6 +50,9 @@ go install
 ```
 
 ## Running
+- Note: To kill processes, use control + c key, make sure you don't just exit the terminal
+
+
 Run zookeeper (from kafka directory)
 ```
 ./bin/zookeeper-server-start.sh config/zookeeper.properties
@@ -61,4 +64,13 @@ Run kafka-cluster (from kafka directory)
 Run Unclog worker
 ```
 $GOPATH/bin/unclog-worker
+```
+## Troubleshooting
+
+### Killing a process in the background
+```
+lsof -i @localhost:[port]
+```
+```
+kill -9 [pid]
 ```
