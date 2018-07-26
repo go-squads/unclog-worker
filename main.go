@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/BaritoLog/unclog/cmds"
+	"github.com/BaritoLog/unclog-worker/cmds"
 	"github.com/urfave/cli"
 )
 

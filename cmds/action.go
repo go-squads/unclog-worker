@@ -2,7 +2,7 @@ package cmds
 
 import (
 	"github.com/BaritoLog/go-boilerplate/srvkit"
-	"github.com/BaritoLog/unclog/filter"
+	"github.com/BaritoLog/unclog-worker/filter"
 	"github.com/Shopify/sarama"
 	"github.com/prometheus/common/log"
 	"github.com/urfave/cli"
