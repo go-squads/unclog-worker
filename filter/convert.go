@@ -34,7 +34,22 @@ func ConvertBytesToTimberWolf(data []byte) (timberWolf TimberWolf, err error) {
 		timberWolf.SetLogLevel("UNLISTED")
 	}
 
+	cleanTimberWolf(timberWolf)
+
 	return
+}
+
+func cleanTimberWolf(timberWolf TimberWolf) {
+	attributes := []string{"_ctx", "log_level", "@timestamp"}
+
+	doc := make(map[string]interface{})
+	for k, v := range timberWolf {
+		doc[k] = v
+
+		if !stringInSlice(k, attributes) {
+			delete(timberWolf, k)
+		}
+	}
 }
 
 // NewTimberWolfFromRequest create timberWolf instance from http request
@@ -67,4 +82,13 @@ func ConvertTimberWolfToElasticDocument(timberWolf TimberWolf) map[string]interf
 	delete(doc, "_ctx")
 
 	return doc
+}
+
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
