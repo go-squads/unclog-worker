@@ -17,22 +17,9 @@ const (
 func main() {
 	app := cli.App{
 		Name:    Name,
-		Usage:   "Provide kafka producer or consumer for Barito project",
+		Usage:   "Provide kafka stream processor for Unclog project",
 		Version: Version,
-		Commands: []cli.Command{
-			// {
-			// 	Name:      "producer",
-			// 	ShortName: "p",
-			// 	Usage:     "start unclog as producer",
-			// 	Action:    cmds.ActionBaritoProducerService,
-			// },
-			{
-				Name:      "consumer",
-				ShortName: "c",
-				Usage:     "start unclog as consumer",
-				Action:    cmds.ActionStreamProcessorService,
-			},
-		},
+		Action:  cmds.ActionStreamProcessorService,
 	}
 
 	err := app.Run(os.Args)
