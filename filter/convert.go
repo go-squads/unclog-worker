@@ -30,6 +30,10 @@ func ConvertBytesToTimberWolf(data []byte) (timberWolf TimberWolf, err error) {
 		timberWolf.SetTimestamp(time.Now().UTC().Format(time.RFC3339))
 	}
 
+	if timberWolf.LogLevel() == "" {
+		timberWolf.SetLogLevel("UNLISTED")
+	}
+
 	return
 }
 

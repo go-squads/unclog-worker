@@ -14,10 +14,7 @@ const (
 type TimberWolf map[string]interface{}
 
 type TimberWolfContext struct {
-	KafkaTopic             string `json:"kafka_topic"`
-	KafkaPartition         int32  `json:"kafka_partition"`
-	KafkaReplicationFactor int16  `json:"kafka_replication_factor"`
-	AppMaxTPS              int    `json:"app_max_tps"`
+	KafkaTopic string `json:"kafka_topic"`
 }
 
 func NewTimberWolf() TimberWolf {
@@ -31,6 +28,15 @@ func (t TimberWolf) SetTimestamp(timestamp string) {
 
 func (t TimberWolf) Timestamp() (s string) {
 	s, _ = t["@timestamp"].(string)
+	return
+}
+
+func (t TimberWolf) SetLogLevel(loglevel string) {
+	t["log_level"] = loglevel
+}
+
+func (t TimberWolf) LogLevel() (s string) {
+	s, _ = t["log_level"].(string)
 	return
 }
 
@@ -67,29 +73,8 @@ func mapToContext(m map[string]interface{}) (ctx *TimberWolfContext, err error) 
 		return
 	}
 
-	kafkaPartition, ok := m["kafka_partition"].(float64)
-	if !ok {
-		err = fmt.Errorf("kafka_partition is missing")
-		return
-	}
-
-	kafkaReplicationFactor, ok := m["kafka_replication_factor"].(float64)
-	if !ok {
-		err = fmt.Errorf("kafka_replication_factor is missing")
-		return
-	}
-
-	appMaxTPS, ok := m["app_max_tps"].(float64)
-	if !ok {
-		err = fmt.Errorf("app_max_tps is missing")
-		return
-	}
-
 	ctx = &TimberWolfContext{
-		KafkaTopic:             kafkaTopic,
-		KafkaPartition:         int32(kafkaPartition),
-		KafkaReplicationFactor: int16(kafkaReplicationFactor),
-		AppMaxTPS:              int(appMaxTPS),
+		KafkaTopic: kafkaTopic,
 	}
 
 	return
