@@ -11,7 +11,6 @@ import (
 const (
 	ErrConvertKafkaMessage   = errkit.Error("Convert KafkaMessage Failed")
 	ErrStore                 = errkit.Error("Store Failed")
-	ErrElasticsearchClient   = errkit.Error("Elasticsearch Client Failed")
 	ErrConsumerWorker        = errkit.Error("Consumer Worker Failed")
 	ErrMakeKafkaAdmin        = errkit.Error("Make kafka admin failed")
 	ErrMakeNewTopicWorker    = errkit.Error("Make new topic worker failed")
