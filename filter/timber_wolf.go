@@ -40,6 +40,26 @@ func (t TimberWolf) LogLevel() (s string) {
 	return
 }
 
+func (t TimberWolf) LogLevelId() int {
+	s := t.LogLevel()
+
+	switch s {
+	case "ERROR":
+		return 1
+	case "INFO":
+		return 2
+	case "TRACE":
+		return 3
+	case "DEBUG":
+		return 4
+	case "WARN":
+		return 5
+	default:
+		return 0
+	}
+
+}
+
 func (t TimberWolf) Context() (ctx *TimberWolfContext) {
 	ctx, _ = t["_ctx"].(*TimberWolfContext)
 	return
