@@ -22,18 +22,24 @@ go get
 
 ## Services used
 - Kafka
-- InfluxDB
+- PostgreSQL 10.4
 ### How to install Kafka
 Download kafka from https://kafka.apache.org/downloads and unzip the folder
 
-### How to install InfluxDB for MacOS
-- Note: for other binaries, follow instructions on https://portal.influxdata.com/downloads
+### How to install PostgreSQL for MacOS
+- Note: 
 
 
 Using Homebrew:
 ```
-brew install influxdb
+brew install postgresql
 ```
+
+### Login PostgreSQL
+```
+sudo -u postgres psql
+```
+
 
 ## Installation and Setup of Project Unclog
 ```
