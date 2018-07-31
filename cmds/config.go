@@ -45,7 +45,7 @@ var (
 
 	DefaultProducerAddress  = ":8080"
 	DefaultProducerMaxRetry = 10
-	DefaultProducerMaxTPS   = 100
+	DefaultProducerMaxTPS   = 10000
 
 	DefaultNewTopicEventName = "new_topic_events"
 )
