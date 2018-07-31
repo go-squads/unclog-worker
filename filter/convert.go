@@ -2,8 +2,6 @@ package filter
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/BaritoLog/go-boilerplate/errkit"
@@ -52,12 +50,6 @@ func cleanTimberWolf(timberWolf TimberWolf) {
 	}
 }
 
-// NewTimberWolfFromRequest create timberWolf instance from http request
-func ConvertRequestToTimberWolf(req *http.Request) (TimberWolf, error) {
-	body, _ := ioutil.ReadAll(req.Body)
-	return ConvertBytesToTimberWolf(body)
-}
-
 // NewTimberWolfFromKafkaMessage create timberWolf instance from kafka message
 func ConvertKafkaMessageToTimberWolf(message *sarama.ConsumerMessage) (timberWolf TimberWolf, err error) {
 	return ConvertBytesToTimberWolf(message.Value)
@@ -71,17 +63,6 @@ func ConvertTimberWolfToKafkaMessage(timberWolf TimberWolf, topic string) *saram
 		Topic: topic,
 		Value: sarama.ByteEncoder(b),
 	}
-}
-
-func ConvertTimberWolfToElasticDocument(timberWolf TimberWolf) map[string]interface{} {
-	doc := make(map[string]interface{})
-	for k, v := range timberWolf {
-		doc[k] = v
-	}
-
-	delete(doc, "_ctx")
-
-	return doc
 }
 
 func stringInSlice(a string, list []string) bool {
