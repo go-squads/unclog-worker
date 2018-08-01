@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/go-squads/unclog-worker/cmds"
+	"github.com/go-squads/unclog-worker/config"
+	"github.com/go-squads/unclog-worker/migration"
 	"github.com/urfave/cli"
 )
 
@@ -15,6 +17,23 @@ const (
 )
 
 func main() {
+	err := setupConfiguration()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app := setupCLIApp()
+	startCLI(&app)
+}
+
+func startCLI(app *cli.App) {
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Some error occurred: %s", err.Error()))
+	}
+}
+
+func setupCLIApp() cli.App {
 	app := cli.App{
 		Name:    NAME,
 		Usage:   "Provide kafka stream processor or stream processor log count for Project Unclog",
@@ -32,10 +51,23 @@ func main() {
 				Usage:     "start unclog-worker as streamprocessorlogcount",
 				Action:    cmds.ActionStreamProcessorLogCountService,
 			},
+			{
+				Name:      "migrator",
+				ShortName: "migrate",
+				Usage:     "run the database migration",
+				Action:    migration.RunMigration,
+			},
 		},
 	}
-	err := app.Run(os.Args)
+
+	return app
+}
+
+func setupConfiguration() error {
+	err := config.SetupConfig()
 	if err != nil {
-		log.Fatal(fmt.Sprintf("Some error occurred: %s", err.Error()))
+		return err
 	}
+
+	return nil
 }
