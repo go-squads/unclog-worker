@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/spf13/viper"
+
 	_ "github.com/lib/pq"
 )
 
@@ -31,10 +33,9 @@ func NewLogLevelRepositoryImpl() *LogLevelRepositoryImpl {
 }
 
 func NewDbClient() *sql.DB {
-
-	conn := fmt.Sprintf(
-		"user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
-		"cappyhoding", "1", "unclog_db", "localhost", "5432")
+	conn := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=%s",
+		viper.GetString("DB_USER"), viper.GetString("DB_PASSWORD"), viper.GetString("DB_NAME"),
+		viper.GetString("DB_HOST"), viper.GetString("DB_PORT"), viper.GetString("DB_SSLMODE"))
 
 	db, err := sql.Open("postgres", conn)
 	if err != nil {
@@ -50,7 +51,7 @@ func NewDbClient() *sql.DB {
 }
 
 func (r *LogLevelRepositoryImpl) Save(metric LogLevelMetric) error {
-	insertStatement := "insert into logs_schema.log_overview(timestamp,loglevel, loglevelId, count) values($1,$2,$3,$4)"
+	insertStatement := "insert into log_metrics(timestamp, log_level, log_level_id, quantity) values($1,$2,$3,$4)"
 	resp, err := r.dbClient.Exec(insertStatement, "now()", metric.logLevel, metric.logLevelId, metric.count)
 	if err != nil {
 		log.Print("\n\n", err.Error(), "\n\n")
