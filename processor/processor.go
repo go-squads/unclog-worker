@@ -1,8 +1,8 @@
 package processor
 
 import (
-	"github.com/BaritoLog/unclog-worker/filter"
 	"github.com/Shopify/sarama"
+	"github.com/go-squads/unclog-worker/filter"
 )
 
 type (

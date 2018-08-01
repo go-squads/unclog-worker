@@ -34,7 +34,7 @@ func NewDbClient() *sql.DB {
 
 	conn := fmt.Sprintf(
 		"user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
-		"pt.go-jekindonesia", "1", "postgres", "localhost", "5432")
+		"cappyhoding", "1", "unclog_db", "localhost", "5432")
 
 	db, err := sql.Open("postgres", conn)
 	if err != nil {

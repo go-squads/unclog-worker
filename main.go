@@ -5,20 +5,20 @@ import (
 	"log"
 	"os"
 
-	"github.com/BaritoLog/unclog-worker/cmds"
+	"github.com/go-squads/unclog-worker/cmds"
 	"github.com/urfave/cli"
 )
 
 const (
-	Name    = "unclog"
-	Version = "0.0.0"
+	NAME    = "unclog"
+	VERSION = "0.0.0"
 )
 
 func main() {
 	app := cli.App{
-		Name:    Name,
+		Name:    NAME,
 		Usage:   "Provide kafka stream processor or stream processor log count for Project Unclog",
-		Version: Version,
+		Version: VERSION,
 		Commands: []cli.Command{
 			{
 				Name:      "streamprocessor",

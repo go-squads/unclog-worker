@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	"github.com/BaritoLog/unclog-worker/filter"
-	"github.com/BaritoLog/unclog-worker/processor"
 	"github.com/Shopify/sarama"
+	"github.com/go-squads/unclog-worker/filter"
+	"github.com/go-squads/unclog-worker/processor"
 	"github.com/prometheus/common/log"
 	"github.com/robfig/cron"
 )

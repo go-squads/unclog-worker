@@ -2,10 +2,10 @@ package cmds
 
 import (
 	"github.com/BaritoLog/go-boilerplate/srvkit"
-	"github.com/BaritoLog/unclog-worker/filter"
-	"github.com/BaritoLog/unclog-worker/processor/analytic"
-	"github.com/BaritoLog/unclog-worker/processor/transformer"
 	"github.com/Shopify/sarama"
+	"github.com/go-squads/unclog-worker/filter"
+	"github.com/go-squads/unclog-worker/processor/analytic"
+	"github.com/go-squads/unclog-worker/processor/transformer"
 	"github.com/urfave/cli"
 )
 
