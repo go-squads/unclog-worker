@@ -67,9 +67,18 @@ Run kafka-cluster (from kafka directory)
 ```
 ./bin/kafka-server-start.sh config/server.properties
 ```
-Run Unclog worker
+Run Unclog Migration (setting up database)
+* Note: Create ```config.yaml``` according to your environment, follow ```config.yaml.example```
 ```
-$GOPATH/bin/unclog-worker
+$GOPATH/bin/unclog-worker migrate
+```
+Run Unclog Worker Stream Processor
+```
+$GOPATH/bin/unclog-worker sp
+```
+Run Unclog Worker Log Count Stream Processor
+```
+$GOPATH/bin/unclog-worker splc
 ```
 ## Troubleshooting
 
@@ -79,4 +88,14 @@ lsof -i @localhost:[port]
 ```
 ```
 kill -9 [pid]
+```
+### Clearing kafka logs
+```
+cd ~/../../tmp
+```
+```
+rm -rf kafka-logs
+```
+```
+rm -rf zookeeper/version-2
 ```
