@@ -2,12 +2,14 @@ package analytic
 
 import (
 	"fmt"
+
 	"github.com/Shopify/sarama"
 	"github.com/go-squads/unclog-worker/filter"
 	"github.com/go-squads/unclog-worker/models"
 	"github.com/go-squads/unclog-worker/processor"
 	"github.com/prometheus/common/log"
 	"github.com/robfig/cron"
+	"github.com/spf13/viper"
 )
 
 type (
@@ -44,11 +46,12 @@ func NewAnalyticProcessor(repository LogLevelMetricRepository) (p *AnalyticProce
 
 func (p *AnalyticProcessor) Start() {
 	log.Infof("Starting Analytic Processor...")
+	interval := viper.GetString("WINDOWING_INTERVAL_IN_SECOND") + "s"
 
 	c := cron.New()
-	c.AddFunc("@every 1m", func() {
+	c.AddFunc("@every "+interval, func() {
 		p.saveToDatabase()
-		fmt.Println("Every 1m")
+		fmt.Println("Every " + interval)
 	})
 	go c.Start()
 }
