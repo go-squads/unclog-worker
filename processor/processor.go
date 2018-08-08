@@ -13,28 +13,4 @@ type (
 		Start()
 		Stop()
 	}
-
-// 	Daemon interface {
-// 		start()
-// 		stop()
-// 	}
-
-// 	CompositeDaemon struct {
-// 		daemon StreamHandler
-// 		daemon Daemon
-// 	}
-// )
-
-// func NewCompositeDaemon() {
-
-// }
-
-// func (p *CompositeDaemon) start() {
-// 	handler.start
-// 	daemon.start
-// }
-
-// func (p *CompositeDaemon) stop() {
-
-// }
 )

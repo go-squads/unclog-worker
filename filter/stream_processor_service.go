@@ -5,12 +5,11 @@ import (
 
 	"github.com/BaritoLog/go-boilerplate/errkit"
 	"github.com/Shopify/sarama"
+	"github.com/go-squads/unclog-worker/models"
 	log "github.com/sirupsen/logrus"
 )
 
 const (
-	ErrConvertKafkaMessage   = errkit.Error("Convert KafkaMessage Failed")
-	ErrStore                 = errkit.Error("Store Failed")
 	ErrConsumerWorker        = errkit.Error("Consumer Worker Failed")
 	ErrMakeKafkaAdmin        = errkit.Error("Make kafka admin failed")
 	ErrMakeNewTopicWorker    = errkit.Error("Make new topic worker failed")
@@ -24,7 +23,7 @@ type StreamProcessorServiceInterface interface {
 	Close()
 	WorkerMap() map[string]ConsumerWorker
 	NewTopicEventWorker() ConsumerWorker
-	SendLogs(topic string, timberWolf TimberWolf) error
+	SendLogs(topic string, timberWolf models.TimberWolf) error
 }
 
 type SaramaMessageHandler = func(*StreamProcessorService, *sarama.ConsumerMessage)
@@ -40,7 +39,7 @@ type StreamProcessorService struct {
 	newTopicEventWorker ConsumerWorker
 
 	lastError      error
-	lastTimberWolf TimberWolf
+	lastTimberWolf models.TimberWolf
 	lastNewTopic   string
 	handler        SaramaMessageHandler
 }
@@ -57,7 +56,7 @@ func NewStreamProcessorService(factory KafkaFactory, groupID, topicSuffix, newTo
 	}
 }
 
-func (s *StreamProcessorService) SendLogs(topic string, timberWolf TimberWolf) (err error) {
+func (s *StreamProcessorService) SendLogs(topic string, timberWolf models.TimberWolf) (err error) {
 	producer, err := s.factory.MakeSyncProducer()
 	if err != nil {
 		err = errkit.Concat(ErrMakeSyncProducer, err)
@@ -159,7 +158,7 @@ func (s *StreamProcessorService) logError(err error) {
 	log.Warn(err.Error())
 }
 
-func (s *StreamProcessorService) LogTimberWolf(timberWolf TimberWolf) {
+func (s *StreamProcessorService) LogTimberWolf(timberWolf models.TimberWolf) {
 	s.lastTimberWolf = timberWolf
 	log.Infof("TimberWolf: %v", timberWolf)
 }

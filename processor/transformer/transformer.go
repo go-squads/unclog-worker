@@ -7,11 +7,9 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-type (
-	Transformer struct {
-		handler processor.StreamHandler
-	}
-)
+type Transformer struct {
+	handler processor.StreamHandler
+}
 
 func NewTransformer() *Transformer {
 	return &Transformer{
@@ -31,12 +29,7 @@ func NewTransformer() *Transformer {
 		},
 	}
 }
+
 func (t *Transformer) GetHandler() processor.StreamHandler {
 	return t.handler
-}
-func start() {
-
-}
-func stop() {
-
 }

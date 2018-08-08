@@ -2,74 +2,67 @@ package filter
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	"github.com/BaritoLog/go-boilerplate/errkit"
 	"github.com/Shopify/sarama"
+	"github.com/go-squads/unclog-worker/models"
 )
 
 const (
 	JsonParseError = errkit.Error("JSON Parse Error")
 )
 
-func ConvertBytesToTimberWolf(data []byte) (timberWolf TimberWolf, err error) {
-	err = json.Unmarshal(data, &timberWolf)
+func ConvertBytesToTimberWolf(data []byte) (timberWolf models.TimberWolf, err error) {
+	mappedData := make(map[string]interface{})
+
+	err = json.Unmarshal(data, &mappedData)
 	if err != nil {
 		err = errkit.Concat(JsonParseError, err)
 		return
 	}
 
-	err = timberWolf.InitContext()
-	if err != nil {
-		return
+	timberWolf = models.TimberWolf{}
+
+	if mappedData["@timestamp"] == nil {
+		timberWolf.Timestamp = time.Now().UTC().Format("2006-01-02 15:04:05")
+	} else {
+		timberWolf.Timestamp = mappedData["@timestamp"].(string)
 	}
 
-	if timberWolf.Timestamp() == "" {
-		timberWolf.SetTimestamp(time.Now().UTC().Format(time.RFC3339))
+	if mappedData["log_level"] == nil {
+		timberWolf.LogLevel = "UNLISTED"
+	} else {
+		timberWolf.LogLevel = strings.ToUpper(mappedData["log_level"].(string))
 	}
 
-	if timberWolf.LogLevel() == "" {
-		timberWolf.SetLogLevel("UNLISTED")
+	if mappedData["app_name"] == nil {
+		timberWolf.ApplicationName = "UNKNOWN APP"
+	} else {
+		timberWolf.ApplicationName = mappedData["app_name"].(string)
 	}
 
-	cleanTimberWolf(timberWolf)
+	if mappedData["node_id"] == nil {
+		timberWolf.NodeId = "UNKNOWN NODE"
+	} else {
+		timberWolf.NodeId = mappedData["node_id"].(string)
+	}
 
 	return
 }
 
-func cleanTimberWolf(timberWolf TimberWolf) {
-	attributes := []string{"_ctx", "log_level", "@timestamp"}
-
-	doc := make(map[string]interface{})
-	for k, v := range timberWolf {
-		doc[k] = v
-
-		if !stringInSlice(k, attributes) {
-			delete(timberWolf, k)
-		}
-	}
-}
-
 // NewTimberWolfFromKafkaMessage create timberWolf instance from kafka message
-func ConvertKafkaMessageToTimberWolf(message *sarama.ConsumerMessage) (timberWolf TimberWolf, err error) {
+func ConvertKafkaMessageToTimberWolf(message *sarama.ConsumerMessage) (timberWolf models.TimberWolf, err error) {
 	return ConvertBytesToTimberWolf(message.Value)
 }
 
 // ConvertToKafkaMessage will convert timberWolf to sarama producer message for kafka
-func ConvertTimberWolfToKafkaMessage(timberWolf TimberWolf, topic string) *sarama.ProducerMessage {
+func ConvertTimberWolfToKafkaMessage(timberWolf models.TimberWolf, topic string) *sarama.ProducerMessage {
 	b, _ := json.Marshal(timberWolf)
 
 	return &sarama.ProducerMessage{
 		Topic: topic,
 		Value: sarama.ByteEncoder(b),
 	}
-}
-
-func stringInSlice(a string, list []string) bool {
-	for _, b := range list {
-		if b == a {
-			return true
-		}
-	}
-	return false
 }

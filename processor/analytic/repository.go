@@ -7,18 +7,13 @@ import (
 
 	"github.com/spf13/viper"
 
+	"github.com/go-squads/unclog-worker/models"
 	_ "github.com/lib/pq"
 )
 
 type (
 	LogLevelMetricRepository interface {
-		Save(metric LogLevelMetric) error
-	}
-
-	LogLevelMetric struct {
-		logLevel   string
-		logLevelId int
-		count      uint32
+		Save(t models.TimberWolf) error
 	}
 
 	LogLevelRepositoryImpl struct {
@@ -50,9 +45,10 @@ func NewDbClient() *sql.DB {
 	return db
 }
 
-func (r *LogLevelRepositoryImpl) Save(metric LogLevelMetric) error {
-	insertStatement := "insert into log_metrics(timestamp, log_level, log_level_id, quantity) values($1,$2,$3,$4)"
-	resp, err := r.dbClient.Exec(insertStatement, "now()", metric.logLevel, metric.logLevelId, metric.count)
+func (r *LogLevelRepositoryImpl) Save(t models.TimberWolf) error {
+	insertStatement := "insert into log_metrics(timestamp, app_name, node_id, log_level, quantity) " +
+		"values($1, $2, $3, $4, $5)"
+	resp, err := r.dbClient.Exec(insertStatement, "now", t.ApplicationName, t.NodeId, t.LogLevel, t.Counter)
 	if err != nil {
 		log.Print("\n\n", err.Error(), "\n\n")
 		return err

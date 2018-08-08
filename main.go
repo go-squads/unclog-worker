@@ -42,13 +42,13 @@ func setupCLIApp() cli.App {
 			{
 				Name:      "streamprocessor",
 				ShortName: "sp",
-				Usage:     "start unclog-worker as streamprocessor",
+				Usage:     "Start unclog-worker as stream processor",
 				Action:    cmds.ActionStreamProcessorService,
 			},
 			{
 				Name:      "streamprocessorlogcount",
 				ShortName: "splc",
-				Usage:     "start unclog-worker as streamprocessorlogcount",
+				Usage:     "Start unclog-worker as stream processor log counter",
 				Action:    cmds.ActionStreamProcessorLogCountService,
 			},
 			{
