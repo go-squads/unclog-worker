@@ -40,19 +40,25 @@ func setupCLIApp() cli.App {
 		Version: VERSION,
 		Commands: []cli.Command{
 			{
-				Name:      "streamprocessor",
+				Name:      "stream processor",
 				ShortName: "sp",
 				Usage:     "Start unclog-worker as stream processor",
 				Action:    cmds.ActionStreamProcessorService,
 			},
 			{
-				Name:      "streamprocessorlogcount",
-				ShortName: "splc",
+				Name:      "stream processor all log counter",
+				ShortName: "splcv1",
 				Usage:     "Start unclog-worker as stream processor log counter",
-				Action:    cmds.ActionStreamProcessorLogCountService,
+				Action:    cmds.ActionStreamProcessorAllLogCounterService,
 			},
 			{
-				Name:      "migrator",
+				Name:      "stream processor log counter by application name and node id",
+				ShortName: "splcv2",
+				Usage:     "Start unclog-worker as stream processor log counter",
+				Action:    cmds.ActionStreamProcessorLogCounterByAppNameAndNodeIdServices,
+			},
+			{
+				Name:      "database migrator",
 				ShortName: "migrate",
 				Usage:     "run the database migration",
 				Action:    migration.RunMigration,

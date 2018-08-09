@@ -1,6 +1,13 @@
-DROP TABLE IF EXISTS log_metrics;
+DROP TABLE IF EXISTS log_metrics_v1, log_metrics_v2;
 
-CREATE TABLE log_metrics (
+CREATE TABLE log_metrics_v1 (
+    id serial primary key,
+    "timestamp" timestamp without time zone,
+    log_level text not null,
+    quantity integer not null
+);
+
+CREATE TABLE log_metrics_v2 (
     id serial primary key,
     "timestamp" timestamp without time zone,
     app_name text not null,

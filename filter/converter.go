@@ -49,6 +49,8 @@ func ConvertBytesToTimberWolf(data []byte) (timberWolf models.TimberWolf, err er
 		timberWolf.NodeId = mappedData["node_id"].(string)
 	}
 
+	timberWolf.Counter = 1
+
 	return
 }
 

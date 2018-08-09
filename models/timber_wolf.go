@@ -5,5 +5,5 @@ type TimberWolf struct {
 	ApplicationName string `json:"app_name"`
 	NodeId          string `json:"node_id"`
 	LogLevel        string `json:"log_level"`
-	Counter         int64  `json:"counter"`
+	Counter         int    `json:"counter"`
 }

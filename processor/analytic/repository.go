@@ -13,7 +13,8 @@ import (
 
 type (
 	LogLevelMetricRepository interface {
-		Save(t models.TimberWolf) error
+		SaveV1(t models.TimberWolf) error
+		SaveV2(t models.TimberWolf) error
 	}
 
 	LogLevelRepositoryImpl struct {
@@ -45,14 +46,26 @@ func NewDbClient() *sql.DB {
 	return db
 }
 
-func (r *LogLevelRepositoryImpl) Save(t models.TimberWolf) error {
-	insertStatement := "insert into log_metrics(timestamp, app_name, node_id, log_level, quantity) " +
+func (r *LogLevelRepositoryImpl) SaveV1(t models.TimberWolf) (err error) {
+	insertStatement := "insert into log_metrics_v1(timestamp, log_level, quantity)" +
+		"values($1, $2, $3)"
+	resp, err := r.dbClient.Exec(insertStatement, "now", t.LogLevel, t.Counter)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	resp.LastInsertId()
+	return
+}
+
+func (r *LogLevelRepositoryImpl) SaveV2(t models.TimberWolf) (err error) {
+	insertStatement := "insert into log_metrics_v2(timestamp, app_name, node_id, log_level, quantity)" +
 		"values($1, $2, $3, $4, $5)"
 	resp, err := r.dbClient.Exec(insertStatement, "now", t.ApplicationName, t.NodeId, t.LogLevel, t.Counter)
 	if err != nil {
-		log.Print("\n\n", err.Error(), "\n\n")
-		return err
+		log.Println(err.Error())
+		return
 	}
 	resp.LastInsertId()
-	return nil
+	return
 }

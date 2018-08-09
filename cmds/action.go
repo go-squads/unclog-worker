@@ -34,7 +34,7 @@ func ActionStreamProcessorService(c *cli.Context) (err error) {
 }
 
 //ActionStreamProcessorLogCountService .
-func ActionStreamProcessorLogCountService(c *cli.Context) (err error) {
+func ActionStreamProcessorAllLogCounterService(c *cli.Context) (err error) {
 	brokers := configKafkaBrokers()
 	groupID := configKafkaGroupId()
 	topicSuffix := "_processed"
@@ -43,7 +43,30 @@ func ActionStreamProcessorLogCountService(c *cli.Context) (err error) {
 	config.Version = sarama.V0_10_2_1
 	factory := filter.NewKafkaFactory(brokers, config)
 
-	analyticProcessor := analytic.NewAnalyticProcessor(analytic.NewLogLevelRepositoryImpl())
+	analyticProcessor := analytic.NewAnalyticV1Processor(analytic.NewLogLevelRepositoryImpl())
+	logCountHandler := analyticProcessor.GetHandler()
+	logCountService := filter.NewStreamProcessorService(factory, groupID, topicSuffix, newTopicEventName, logCountHandler)
+
+	analyticProcessor.Start()
+	if err = logCountService.Start(); err != nil {
+		return
+	}
+
+	srvkit.GracefullShutdown(logCountService.Close)
+	srvkit.GracefullShutdown(analyticProcessor.Stop)
+	return
+}
+
+func ActionStreamProcessorLogCounterByAppNameAndNodeIdServices(c *cli.Context) (err error) {
+	brokers := configKafkaBrokers()
+	groupID := configKafkaGroupId()
+	topicSuffix := "_processed"
+	newTopicEventName := configNewTopicEvent()
+	config := sarama.NewConfig()
+	config.Version = sarama.V0_10_2_1
+	factory := filter.NewKafkaFactory(brokers, config)
+
+	analyticProcessor := analytic.NewAnalyticV2Processor(analytic.NewLogLevelRepositoryImpl())
 	logCountHandler := analyticProcessor.GetHandler()
 	logCountService := filter.NewStreamProcessorService(factory, groupID, topicSuffix, newTopicEventName, logCountHandler)
 
