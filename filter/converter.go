@@ -32,21 +32,21 @@ func ConvertBytesToTimberWolf(data []byte) (timberWolf models.TimberWolf, err er
 	}
 
 	if mappedData["log_level"] == nil || mappedData["log_level"] == "" {
-		timberWolf.LogLevel = "UNLISTED"
+		timberWolf.LogLevel = "unlisted"
 	} else {
-		timberWolf.LogLevel = strings.ToUpper(mappedData["log_level"].(string))
+		timberWolf.LogLevel = strings.ToLower(mappedData["log_level"].(string))
 	}
 
 	if mappedData["app_name"] == nil || mappedData["app_name"] == "" {
-		timberWolf.ApplicationName = "UNKNOWN APP"
+		timberWolf.ApplicationName = "unknown app"
 	} else {
-		timberWolf.ApplicationName = mappedData["app_name"].(string)
+		timberWolf.ApplicationName = strings.ToLower(mappedData["app_name"].(string))
 	}
 
 	if mappedData["node_id"] == nil || mappedData["node_id"] == "" {
-		timberWolf.NodeId = "UNKNOWN NODE"
+		timberWolf.NodeId = "unknown node"
 	} else {
-		timberWolf.NodeId = mappedData["node_id"].(string)
+		timberWolf.NodeId = strings.ToLower(mappedData["node_id"].(string))
 	}
 
 	timberWolf.Counter = 1

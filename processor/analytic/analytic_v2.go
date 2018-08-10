@@ -1,8 +1,6 @@
 package analytic
 
 import (
-	"fmt"
-
 	"github.com/Shopify/sarama"
 	"github.com/go-squads/unclog-worker/filter"
 	"github.com/go-squads/unclog-worker/models"
@@ -47,8 +45,8 @@ func (p *AnalyticV2Processor) Start() {
 	c := cron.New()
 	c.AddFunc("@every "+interval, func() {
 		p.saveToDatabase()
-		resetAll(timberWolvesV2)
-		fmt.Println("Every " + interval)
+		log.Info(timberWolvesV2)
+		timberWolvesV2 = []models.TimberWolf{}
 	})
 	go c.Start()
 }
@@ -58,20 +56,15 @@ func (p *AnalyticV2Processor) Stop() {
 }
 
 func (p *AnalyticV2Processor) saveToDatabase() {
-	fmt.Println("Saving to database...")
-	p.saveAllMetric()
-	fmt.Println("Logs aggregation stored!")
+	for _, timberWolf := range timberWolvesV2 {
+		p.repository.SaveV2(timberWolf)
+	}
+
+	log.Info("Logs aggregation stored!")
 }
 
 func (p *AnalyticV2Processor) GetHandler() processor.StreamHandler {
 	return p.analyticHandler
-}
-
-func (p *AnalyticV2Processor) saveAllMetric() {
-	for _, timberWolf := range timberWolvesV2 {
-		p.repository.SaveV2(timberWolf)
-
-	}
 }
 
 func getTimberWolfV2Index(t models.TimberWolf) int {

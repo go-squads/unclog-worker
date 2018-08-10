@@ -58,6 +58,12 @@ func setupCLIApp() cli.App {
 				Action:    cmds.ActionStreamProcessorLogCounterByAppNameAndNodeIdServices,
 			},
 			{
+				Name:      "stream processor alerting system",
+				ShortName: "splcv3",
+				Usage:     "Start unclog-worker as alerting system",
+				Action:    cmds.ActionStreamProcessorAlertingServices,
+			},
+			{
 				Name:      "database migrator",
 				ShortName: "migrate",
 				Usage:     "run the database migration",

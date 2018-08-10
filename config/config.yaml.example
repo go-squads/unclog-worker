@@ -5,39 +5,19 @@ DB_SSLMODE: disable
 DB_HOST: localhost
 DB_PORT: 5432
 
-WINDOWING_INTERVAL_IN_SECOND_V1: 10
+WINDOWING_INTERVAL_IN_SECOND_V1: 5
 WINDOWING_INTERVAL_IN_SECOND_V2: 10
 
-ALERT:
-  ERROR:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  DEBUG:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  INFO:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  TRACE:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  UNLISTED:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  WARN:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  FATAL:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
-  OFF:
-    GO-PAY-BACKEND: 1
-    GO-PAY-BACKUP: 1
-    GO-PAY-WALLET: 1
+ALERTS:
+  #LOG_LEVEL,APP_NAME,INTERVAL_IN_SECOND,THRESHOLD
+  error,go-pay-backend,10,4|error,go-pay-backup,10,3|error,go-pay-wallet,10,2
+
+EMAIL_SENDER: test@example.com
+EMAIL_SENDER_PASS: testexample
+EMAIL_RECEIVERS:
+  testone@example.com
+  testtwo@example.com
+  testthree@example.com
+
+SMTP_SERVER: smtp.gmail.com
+SMTP_PORT: 465
