@@ -5,8 +5,8 @@ import (
 	"github.com/go-squads/unclog-worker/filter"
 	"github.com/go-squads/unclog-worker/models"
 	"github.com/go-squads/unclog-worker/processor"
+	"github.com/jasonlvhit/gocron"
 	"github.com/prometheus/common/log"
-	"github.com/robfig/cron"
 	"github.com/spf13/viper"
 )
 
@@ -17,7 +17,10 @@ type (
 	}
 )
 
-var timberWolvesV2 []models.TimberWolf
+var (
+	timberWolvesV2 []models.TimberWolf
+	cronJobV2      *gocron.Scheduler
+)
 
 func NewAnalyticV2Processor(repository LogLevelMetricRepository) (p *AnalyticV2Processor) {
 	return &AnalyticV2Processor{
@@ -40,19 +43,20 @@ func NewAnalyticV2Processor(repository LogLevelMetricRepository) (p *AnalyticV2P
 
 func (p *AnalyticV2Processor) Start() {
 	log.Infof("Starting Analytic Processor...")
-	interval := viper.GetString("WINDOWING_INTERVAL_IN_SECOND_V2") + "s"
+	interval := viper.GetInt("WINDOWING_INTERVAL_IN_SECOND_V2")
 
-	c := cron.New()
-	c.AddFunc("@every "+interval, func() {
+	cronJobV2 = gocron.NewScheduler()
+
+	cronJobV2.Every(uint64(interval)).Seconds().Do(func() {
 		p.saveToDatabase()
 		log.Info(timberWolvesV2)
 		timberWolvesV2 = []models.TimberWolf{}
 	})
-	go c.Start()
+	cronJobV2.Start()
 }
 
 func (p *AnalyticV2Processor) Stop() {
-	c.Stop()
+	cronJobV2.Clear()
 }
 
 func (p *AnalyticV2Processor) saveToDatabase() {

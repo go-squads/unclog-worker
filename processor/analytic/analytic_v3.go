@@ -23,6 +23,7 @@ type (
 var (
 	timberWolvesV3 []models.TimberWolf
 	logs           map[string]map[string]int
+	cronJobV3      *gocron.Scheduler
 )
 
 func NewAnalyticV3Processor(repository LogLevelMetricRepository) (p *AnalyticV3Processor) {
@@ -51,6 +52,7 @@ func (p *AnalyticV3Processor) Start() {
 	logs = map[string]map[string]int{}
 	log.Infof("Starting Alerting System...")
 
+	cronJobV3 = gocron.NewScheduler()
 	config := getAlertConfigs()
 
 	for idx, _ := range config {
@@ -61,11 +63,11 @@ func (p *AnalyticV3Processor) Start() {
 		interval, _ := strconv.ParseUint(singleConf[2], 10, 64)
 		threshold, _ := strconv.Atoi(singleConf[3])
 
-		gocron.Every(interval).Seconds().Do(task, appName, logLevel, threshold)
+		cronJobV3.Every(interval).Seconds().Do(task, appName, logLevel, threshold)
 
 	}
 
-	gocron.Start()
+	cronJobV3.Start()
 }
 
 func getAlertConfigs() (config [][]string) {
@@ -79,7 +81,7 @@ func getAlertConfigs() (config [][]string) {
 }
 
 func (p *AnalyticV3Processor) Stop() {
-	c.Stop()
+	cronJobV3.Clear()
 }
 
 func task(appName, logLevel string, threshold int) {
