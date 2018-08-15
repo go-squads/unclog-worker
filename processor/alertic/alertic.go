@@ -14,8 +14,9 @@ type Alertic struct {
 }
 
 func SendAlert(appName, logLevel string, current int, handler string, receivers []string) {
-
 	if handler == "email" {
 		SendEmail(appName, logLevel, current, receivers)
+	} else if handler == "slack" {
+		SendToSlack(appName, logLevel, current, receivers)
 	}
 }
