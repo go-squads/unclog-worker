@@ -14,10 +14,6 @@ ALERTS:
 
 EMAIL_SENDER: test@example.com
 EMAIL_SENDER_PASS: testexample
-EMAIL_RECEIVERS:
-  testone@example.com
-  testtwo@example.com
-  testthree@example.com
 
 SMTP_SERVER: smtp.gmail.com
 SMTP_PORT: 465

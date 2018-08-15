@@ -15,3 +15,12 @@ CREATE TABLE log_metrics_v2 (
     log_level text not null,
     quantity integer not null
 );
+
+create table alerts (
+  id serial primary key,
+  app_name text not null,
+  log_level text not null,
+  duration integer not null,
+  "limit" integer not null,
+  callback text not null
+)

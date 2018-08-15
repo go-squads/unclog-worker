@@ -15,6 +15,7 @@ type (
 	LogLevelMetricRepository interface {
 		SaveV1(t models.TimberWolf) error
 		SaveV2(t models.TimberWolf) error
+		GetAlertConfig() ([]AlertConfig, error)
 	}
 
 	LogLevelRepositoryImpl struct {
@@ -67,5 +68,28 @@ func (r *LogLevelRepositoryImpl) SaveV2(t models.TimberWolf) (err error) {
 		return
 	}
 	resp.LastInsertId()
+	return
+}
+
+func (r *LogLevelRepositoryImpl) GetAlertConfig() (alertsConfigs []AlertConfig, err error) {
+	rows, err := r.dbClient.Query("select * from alerts ")
+
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	for rows.Next() {
+		a := AlertConfig{}
+
+		err := rows.Scan(&a.Id, &a.AppName, &a.LogLevel, &a.Duration, &a.Limit, &a.Callback)
+
+		if err != nil {
+			return nil, err
+		}
+
+		alertsConfigs = append(alertsConfigs, a)
+	}
+
 	return
 }

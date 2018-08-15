@@ -5,9 +5,17 @@ type ConfigStruct struct {
 	debugLog map[string]interface{}
 }
 
-func SendAlert(appName, logLevel string, current int, handler string) {
+type Alertic struct {
+	alerticType string
+	appName     string
+	logLevel    string
+	limit       int
+	handler     func()
+}
+
+func SendAlert(appName, logLevel string, current int, handler string, receivers []string) {
 
 	if handler == "email" {
-		SendEmail(appName, logLevel, current)
+		SendEmail(appName, logLevel, current, receivers)
 	}
 }

@@ -39,10 +39,10 @@ func (mail *Mail) BuildMessage() string {
 	return message
 }
 
-func buildMail(appName, logLevel string, currentCount int) (mail Mail) {
+func buildMail(appName, logLevel string, currentCount int, receivers []string) (mail Mail) {
 	mail = Mail{}
 	mail.senderId = viper.GetString("EMAIL_SENDER")
-	mail.toIds = viper.GetStringSlice("EMAIL_RECEIVERS")
+	mail.toIds = receivers
 	mail.subject = "[Barito Alert] " + appName
 	mail.body = appName + " had " + strconv.Itoa(currentCount) + " " + logLevel
 
@@ -107,8 +107,8 @@ func send(client smtp.Client, mail Mail) {
 	}
 }
 
-func SendEmail(appName, logLevel string, currentCount int) {
-	mail := buildMail(appName, logLevel, currentCount)
+func SendEmail(appName, logLevel string, currentCount int, receivers []string) {
+	mail := buildMail(appName, logLevel, currentCount, receivers)
 	client := setupConnection(mail)
 	send(*client, mail)
 

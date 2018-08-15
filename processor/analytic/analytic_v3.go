@@ -1,6 +1,7 @@
 package analytic
 
 import (
+	"encoding/json"
 	"github.com/Shopify/sarama"
 	"github.com/go-squads/unclog-worker/filter"
 	"github.com/go-squads/unclog-worker/models"
@@ -8,15 +9,21 @@ import (
 	"github.com/go-squads/unclog-worker/processor/alertic"
 	"github.com/jasonlvhit/gocron"
 	"github.com/prometheus/common/log"
-	"github.com/spf13/viper"
-	"strconv"
-	"strings"
 )
 
 type (
 	AnalyticV3Processor struct {
 		repository      LogLevelMetricRepository
 		analyticHandler processor.StreamHandler
+	}
+
+	AlertConfig struct {
+		Id       int
+		AppName  string
+		LogLevel string
+		Duration int
+		Limit    int
+		Callback string
 	}
 )
 
@@ -53,30 +60,40 @@ func (p *AnalyticV3Processor) Start() {
 	log.Infof("Starting Alerting System...")
 
 	cronJobV3 = gocron.NewScheduler()
-	config := getAlertConfigs()
+	config, err := p.repository.GetAlertConfig()
+
+	if err != nil {
+		log.Error(err)
+	}
 
 	for idx, _ := range config {
-		singleConf := config[idx]
+		a := config[idx]
 
-		logLevel := singleConf[0]
-		appName := singleConf[1]
-		interval, _ := strconv.ParseUint(singleConf[2], 10, 64)
-		threshold, _ := strconv.Atoi(singleConf[3])
+		logLevel := a.LogLevel
+		appName := a.AppName
+		duration := uint64(a.Duration)
+		limit := a.Limit
 
-		cronJobV3.Every(interval).Seconds().Do(task, appName, logLevel, threshold)
+		var cb map[string]interface{}
+		err = json.Unmarshal([]byte(a.Callback), &cb)
+		if err != nil {
+			log.Fatal(err)
+		}
 
+		callbackType := cb["type"]
+		callbackReceiver := convertInterfaceToString(cb["receivers"].([]interface{}))
+
+		cronJobV3.Every(duration).Seconds().Do(task, appName, logLevel, callbackType, callbackReceiver, limit)
 	}
 
 	cronJobV3.Start()
 }
 
-func getAlertConfigs() (config [][]string) {
-	stringConfig := viper.GetString("ALERTS")
-	splittedConfig := strings.Split(stringConfig, "|")
-
-	for idx, _ := range splittedConfig {
-		config = append(config, strings.Split(splittedConfig[idx], ","))
+func convertInterfaceToString(arrayOfInterface []interface{}) (receivers []string) {
+	for idx, _ := range arrayOfInterface {
+		receivers = append(receivers, arrayOfInterface[idx].(string))
 	}
+
 	return
 }
 
@@ -84,9 +101,9 @@ func (p *AnalyticV3Processor) Stop() {
 	cronJobV3.Clear()
 }
 
-func task(appName, logLevel string, threshold int) {
+func task(appName, logLevel, callbackType string, callbackReceivers []string, threshold int) {
 	if logs[appName][logLevel] > threshold {
-		alertic.SendAlert(appName, logLevel, logs[appName][logLevel], "email")
+		alertic.SendAlert(appName, logLevel, logs[appName][logLevel], callbackType, callbackReceivers)
 		logs[appName][logLevel] = 0
 	}
 }
