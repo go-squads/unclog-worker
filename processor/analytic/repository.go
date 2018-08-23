@@ -15,6 +15,7 @@ type (
 	LogLevelMetricRepository interface {
 		SaveV1(t models.TimberWolf) error
 		SaveV2(t models.TimberWolf) error
+		SaveV4(t models.TimberWolf) error
 		GetAlertConfig() ([]AlertConfig, error)
 	}
 
